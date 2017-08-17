@@ -1,21 +1,13 @@
-# EPi.Libraries.QnaMaker
+﻿
+The settings were added to your appSettings:
 
-[![Build status](https://ci.appveyor.com/api/projects/status/p9wb03tyde11si8s/branch/master?svg=true)](https://ci.appveyor.com/project/jstemerdink/epi-libraries-qnamaker/branch/master)
-[![GitHub version](https://badge.fury.io/gh/jstemerdink%2FEPi.Libraries.Logging.OneTrueError.svg)](http://badge.fury.io/gh/jstemerdink%2FEPi.Libraries.QnaMaker)
-[![Platform](https://img.shields.io/badge/platform-.NET%204.6-blue.svg?style=flat)](https://msdn.microsoft.com/en-us/library/w0x726c2%28v=vs.110%29.aspx)
-[![Platform](https://img.shields.io/badge/EPiServer-%2010.0.1-orange.svg?style=flat)](http://world.episerver.com/cms/)
-[![GitHub license](https://img.shields.io/badge/license-MIT%20license-blue.svg?style=flat)](LICENSE)
+<add key="qna:baseuri" value="https://westus.api.cognitive.microsoft.com/qnamaker/v2.0/knowledgebases" />
+<add key="qna:subscriptionkey" value="" />
 
-## About
-Connect your site to the QnA maker api
-See [QnA maker site](https://azure.microsoft.com/en-us/services/cognitive-services/qna-maker/) for information about the QnA maker API.
+You will need to set the appropriate values, else a configuration error will be thrown.
 
-## Parts
-[Core](EPi.Libraries.QnaMaker/README.md)  
-[ContentArea implementation](EPi.Libraries.QnaMaker.ContentArea/README.md)  
+Usage example:
 
-## How to use
-```
     [QnaOverviewPage]
     public class QnaOverviewPage : PageData
     {
@@ -55,9 +47,4 @@ See [QnA maker site](https://azure.microsoft.com/en-us/services/cognitive-servic
         [QnaQuestion]
         public virtual string Question { get; set; }
     }
-```
 
-
-> *Powered by ReSharper*
-
-> [![image](http://resources.jetbrains.com/assets/media/open-graph/jetbrains_250x250.png)](http://jetbrains.com)

@@ -10,10 +10,6 @@
 Connect your site to the QnA maker api
 See [QnA maker site](https://azure.microsoft.com/en-us/services/cognitive-services/qna-maker/) for information about the QnA maker API.
 
-## Parts
-[Core](EPi.Libraries.QnaMaker/README.md)  
-[ContentArea implementation](EPi.Libraries.QnaMaker.ContentArea/README.md)  
-
 ## How to use
 ```
     [QnaOverviewPage]
