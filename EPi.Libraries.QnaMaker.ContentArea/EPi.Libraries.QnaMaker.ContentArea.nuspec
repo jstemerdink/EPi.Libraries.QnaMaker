@@ -15,7 +15,7 @@
     <copyright>Copyright © Jeroen Stemerdink 2017</copyright>
     <tags>qna faq</tags>
     <dependencies>
-      <dependency id="EPi.Libraries.QnaMaker" version="0.1.0" />
+      <dependency id="EPi.Libraries.QnaMaker" version="1.0.0" />
     </dependencies>
   </metadata>
 </package>
