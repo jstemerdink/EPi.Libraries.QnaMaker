@@ -87,17 +87,22 @@ namespace EPi.Libraries.QnaMaker.Core
                 return;
             }
 
+            this.Logger = context.Locate.Advanced.GetInstance<ILogger>();
+
+            this.Logger.Log(Level.Debug, "[QnA Maker] Initializing content events.");
+
             this.ContentRepository = context.Locate.Advanced.GetInstance<IContentRepository>();
             this.SoftLinkRepository = context.Locate.Advanced.GetInstance<IContentSoftLinkRepository>();
             this.ContentVersionRepository = context.Locate.Advanced.GetInstance<IContentVersionRepository>();
             this.ContentEvents = context.Locate.Advanced.GetInstance<IContentEvents>();
-            this.Logger = context.Locate.Advanced.GetInstance<ILogger>();
             this.ApiWrapper = context.Locate.Advanced.GetInstance<QnApiWrapper>();
 
             this.ContentEvents.PublishedContent += this.OnPublishedContent;
             this.ContentEvents.PublishingContent += this.OnPublishingContent;
             this.ContentEvents.DeletedContent += this.OnDeletedContent;
             this.ContentEvents.MovingContent += this.OnMovingContent;
+
+            this.Logger.Log(Level.Debug, "[QnA Maker] Finished initializing content events.");
         }
 
         /// <summary>
@@ -169,6 +174,7 @@ namespace EPi.Libraries.QnaMaker.Core
             {
                 e.CancelAction = true;
                 e.CancelReason = "The page does not contain a property marked with the QnaContainer Attribute.";
+                this.Logger.Log(Level.Debug, "[QnA Maker] The page does not contain a property marked with the QnaContainer Attribute.");
 
                 return;
             }
@@ -179,8 +185,8 @@ namespace EPi.Libraries.QnaMaker.Core
             if (knowledgebaseIdProperty == null)
             {
                 e.CancelAction = true;
-                e.CancelReason =
-                    "The page does not contain a string property marked with the QnaKnowledgebaseId Attribute.";
+                e.CancelReason = "The page does not contain a string property marked with the QnaKnowledgebaseId Attribute.";
+                this.Logger.Log(Level.Debug, "[QnA Maker] The page does not contain a string property marked with the QnaKnowledgebaseId Attribute.");
 
                 return;
             }
@@ -190,6 +196,8 @@ namespace EPi.Libraries.QnaMaker.Core
             // If there is a knowledge base id, there is no need to create a new knowledgebase.
             if (!string.IsNullOrWhiteSpace(knowledgebaseId))
             {
+                this.Logger.Log(Level.Debug, "[QnA Maker] A knowledgebase exists with id {0}", knowledgebaseId);
+
                 return;
             }
 
@@ -199,6 +207,8 @@ namespace EPi.Libraries.QnaMaker.Core
             {
                 knowledgebaseName = e.Content.Name;
             }
+
+            this.Logger.Log(Level.Debug, "[QnA Maker] Creating the knowledgebase");
 
             // Create a new empty knowledgebase.
             CreateKnowledgebaseRequest createKnowledgeBaseRequest = new CreateKnowledgebaseRequest();
@@ -219,6 +229,8 @@ namespace EPi.Libraries.QnaMaker.Core
                     "Unable to create a new knowledge base.";
             }
 
+            this.Logger.Log(Level.Debug, "[QnA Maker] Created the knowledgebase with id {0}", knowledgebaseId);
+
             // When being "delayed published" the pagedata is readonly. Create a writable clone to be safe.
             ContentData editableContent = contentData.CreateWritableClone() as ContentData;
 
@@ -227,6 +239,8 @@ namespace EPi.Libraries.QnaMaker.Core
                 try
                 {
                     editableContent[knowledgebaseIdProperty.Name] = knowledgebaseId;
+
+                    this.Logger.Log(Level.Debug, "[QnA Maker] Added the knowledgebase id to the content: {0}", knowledgebaseId);
                 }
                 catch (EPiServerException epiServerException)
                 {
