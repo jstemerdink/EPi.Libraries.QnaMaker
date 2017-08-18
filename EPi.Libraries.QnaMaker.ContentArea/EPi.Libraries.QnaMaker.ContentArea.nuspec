@@ -18,7 +18,4 @@
       <dependency id="EPi.Libraries.QnaMaker" version="0.1.0" />
     </dependencies>
   </metadata>
-  <files>
-    <file src="readme.txt" target="" />
-  </files>
 </package>
