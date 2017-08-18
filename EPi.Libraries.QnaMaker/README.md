@@ -24,6 +24,14 @@ See [QnA maker site](https://azure.microsoft.com/en-us/services/cognitive-servic
         [AllowedTypes(typeof(QnaItemBlock))]
         public virtual ContentArea QnaItems { get; set; }
 
+        // <summary>
+        /// Gets or sets the knowledgebase name.
+        /// </summary>
+        /// <value>The  knowledgebase name.</value>
+        [Display(Name = "QnA knowledgebase name", Description = "QnA knowledgebase name", GroupName = SystemTabNames.Content, Order = 20)]
+        [QnaKnowledgebaseName]
+        public virtual string QnaKnowledgebaseName { get; set; }
+
         /// <summary>
         /// Gets or sets the qna knowledgebase identifier.
         /// </summary>
