@@ -23,6 +23,7 @@ namespace EPi.Libraries.QnaMaker.ContentArea
     using System.Collections.Generic;
     using System.Collections.ObjectModel;
     using System.Linq;
+    using System.Net.Http;
 
     using EPi.Libraries.QnaMaker.Attributes;
     using EPi.Libraries.QnaMaker.Core;
@@ -47,6 +48,7 @@ namespace EPi.Libraries.QnaMaker.ContentArea
         /// </summary>
         /// <param name="sender">The sender.</param>
         /// <param name="e">The <see cref="DeleteContentEventArgs"/> instance containing the event data.</param>
+        /// <exception cref="HttpRequestException">Failed to delete knowledge base</exception>
         protected override void OnDeletedContent(object sender, DeleteContentEventArgs e)
         {
             if (e == null)
@@ -82,38 +84,10 @@ namespace EPi.Libraries.QnaMaker.ContentArea
             {
                 this.Logger.Log(Level.Debug, "[QnA Maker] Content is QnA item.");
 
-                QnaPair qnaPair = contentData.GetQnaPair();
-
-                if (qnaPair == null)
-                {
-                    return;
-                }
-
                 this.Logger.Log(Level.Debug, "[QnA Maker] Updating knowledgebase: deleting item(s).");
 
                 // Delete the QnA item
-                UpdateKnowledgebaseRequest updateKnowledgebaseRequest = new UpdateKnowledgebaseRequest();
-                ItemsToDelete itemsToDelete = new ItemsToDelete();
-                itemsToDelete.QnaPairs = new[] { qnaPair };
-
-                updateKnowledgebaseRequest.Delete = itemsToDelete;
-
-                // Delete it from every knowledgebase
-                List<IContent> overviewPageList = this.GetOverviewPages(contentLink: e.ContentLink);
-
-                foreach (IContent page in overviewPageList)
-                {
-                    string knowledgebaseId = (page as ContentData).KnowledgebaseId();
-
-                    if (!string.IsNullOrWhiteSpace(value: knowledgebaseId))
-                    {
-                        this.Logger.Log(Level.Debug, "[QnA Maker] Deleting item from the knowledgebase with id: {0}", knowledgebaseId);
-
-                        this.ApiWrapper.UpdateQnaItem(
-                            updateKnowledgebaseRequest: updateKnowledgebaseRequest,
-                            knowledgebaseId: knowledgebaseId);
-                    }
-                }
+                this.DeleteQnaPair(contentData, e.ContentLink);
             }
         }
 
@@ -146,38 +120,10 @@ namespace EPi.Libraries.QnaMaker.ContentArea
                 return;
             }
 
-            QnaPair qnaPair = contentData.GetQnaPair();
-
-            if (qnaPair == null)
-            {
-                return;
-            }
-
             this.Logger.Log(Level.Debug, "[QnA Maker] Updating knowledgebase: deleting item(s), because moved to trash.");
 
             // Delete the QnA item
-            UpdateKnowledgebaseRequest updateKnowledgebaseRequest = new UpdateKnowledgebaseRequest();
-            ItemsToDelete itemsToDelete = new ItemsToDelete();
-            itemsToDelete.QnaPairs = new[] { qnaPair };
-
-            updateKnowledgebaseRequest.Delete = itemsToDelete;
-
-            // Delete it from every knowledgebase
-            List<IContent> overviewPageList = this.GetOverviewPages(contentLink: e.ContentLink);
-
-            foreach (IContent page in overviewPageList)
-            {
-                string knowledgebaseId = (page as ContentData).KnowledgebaseId();
-
-                if (!string.IsNullOrWhiteSpace(value: knowledgebaseId))
-                {
-                    this.Logger.Log(Level.Debug, "[QnA Maker] Deleting item from the knowledgebase with id: {0}", knowledgebaseId);
-
-                    this.ApiWrapper.UpdateQnaItem(
-                        updateKnowledgebaseRequest: updateKnowledgebaseRequest,
-                        knowledgebaseId: knowledgebaseId);
-                }
-            }
+            this.DeleteQnaPair(contentData, e.ContentLink);
         }
 
         /// <summary>
@@ -185,6 +131,7 @@ namespace EPi.Libraries.QnaMaker.ContentArea
         /// </summary>
         /// <param name="sender">The sender.</param>
         /// <param name="e">The <see cref="EPiServer.ContentEventArgs"/> instance containing the event data.</param>
+        /// <exception cref="HttpRequestException">Failed to add or delete qna item for knowledge base, or to delete the knowledgebase/</exception>
         protected override void OnPublishedContent(object sender, ContentEventArgs e)
         {
             if (e == null)
@@ -221,14 +168,10 @@ namespace EPi.Libraries.QnaMaker.ContentArea
                 List<ContentAreaItem> previousItems = new List<ContentAreaItem>();
                 List<ContentAreaItem> currentItems = contentArea.Items.ToList();
 
-                ContentVersion previousVersion = this.ContentVersionRepository.List(contentLink: e.Content.ContentLink)
-                    .OrderByDescending(x => x.Saved).FirstOrDefault(
-                        version => version.IsMasterLanguageBranch
-                                   && version.Status == VersionStatus.PreviouslyPublished);
+                ContentData previousContent = e.Content.PreviousVersion<ContentData>();
 
-                if (previousVersion != null)
+                if (previousContent != null)
                 {
-                    ContentData previousContent = e.Content.PreviousVersion<ContentData>();
                     ContentArea previousContentArea =
                         previousContent.GetPropertyValue<QnaContainerAttribute, ContentArea>();
 
@@ -298,6 +241,45 @@ namespace EPi.Libraries.QnaMaker.ContentArea
         }
 
         /// <summary>
+        /// Deletes the qna pair.
+        /// </summary>
+        /// <param name="contentData">The content data.</param>
+        /// <param name="contentReference">The content reference.</param>
+        private void DeleteQnaPair(ContentData contentData, ContentReference contentReference)
+        {
+            QnaPair qnaPair = contentData.GetQnaPair();
+
+            if (qnaPair == null)
+            {
+                return;
+            }
+            
+            UpdateKnowledgebaseRequest updateKnowledgebaseRequest = new UpdateKnowledgebaseRequest();
+            ItemsToDelete itemsToDelete = new ItemsToDelete { QnaPairs = new[] { qnaPair } };
+
+            updateKnowledgebaseRequest.Delete = itemsToDelete;
+
+                // Delete it from every knowledgebase
+                List<IContent> overviewPageList = this.GetOverviewPages(contentLink: contentReference);
+
+                foreach (IContent page in overviewPageList)
+                {
+                    string knowledgebaseId = (page as ContentData).KnowledgebaseId();
+
+                    if (string.IsNullOrWhiteSpace(value: knowledgebaseId))
+                    {
+                        continue;
+                    }
+
+                    this.Logger.Log(Level.Debug, "[QnA Maker] Deleting item from the knowledgebase with id: {0}", knowledgebaseId);
+
+                    this.ApiWrapper.UpdateQnaItem(
+                        updateKnowledgebaseRequest: updateKnowledgebaseRequest,
+                        knowledgebaseId: knowledgebaseId);
+                }
+        }
+
+        /// <summary>
         /// Updates the qna pairs.
         /// </summary>
         /// <param name="contentData">The content data.</param>
@@ -318,12 +300,26 @@ namespace EPi.Libraries.QnaMaker.ContentArea
                 return;
             }
 
-            // Add the QnA item
-            UpdateKnowledgebaseRequest updateKnowledgebaseRequest = new UpdateKnowledgebaseRequest();
-            ItemsToAdd itemsToAdd = new ItemsToAdd();
-            itemsToAdd.QnaPairs = new[] { qnaPair };
+            ContentData previousContent = contentReference.PreviousVersion<ContentData>();
+            QnaPair previousQnaPair = previousContent.GetQnaPair();
 
-            itemsToAdd.Urls = overviewPageList.Select(page => page.ContentUrl()).ToArray();
+            UpdateKnowledgebaseRequest updateKnowledgebaseRequest = new UpdateKnowledgebaseRequest();
+
+            // If the question has changed, delete the old version. qna is based on question.
+            if (!qnaPair.Question.Equals(previousQnaPair.Question))
+            {
+                ItemsToDelete itemsToDelete = new ItemsToDelete { QnaPairs = new[] { previousQnaPair } };
+
+                updateKnowledgebaseRequest.Delete = itemsToDelete;
+            }
+
+            // Add the QnA item
+            ItemsToAdd itemsToAdd = new ItemsToAdd
+                                        {
+                                            QnaPairs = new[] { qnaPair },
+                                            Urls = overviewPageList.Select(page => page.ContentUrl())
+                                                .ToArray()
+                                        };
 
             updateKnowledgebaseRequest.Add = itemsToAdd;
 
@@ -353,7 +349,7 @@ namespace EPi.Libraries.QnaMaker.ContentArea
             List<ContentReference> referencingContentLinks = this.SoftLinkRepository
                 .Load(contentLink: contentLink, reversed: true)
                 .Where(
-                    link => (link.SoftLinkType == ReferenceType.PageLinkReference)
+                    link => link.SoftLinkType == ReferenceType.PageLinkReference
                             && !ContentReference.IsNullOrEmpty(contentLink: link.OwnerContentLink))
                 .Select(link => link.OwnerContentLink).ToList();
 

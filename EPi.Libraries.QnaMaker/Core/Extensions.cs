@@ -227,6 +227,17 @@ namespace EPi.Libraries.QnaMaker.Core
         /// <summary>
         /// Gets the previous version.
         /// </summary>
+        /// <param name="content">The content.</param>
+        /// <returns>The previous version of the content.</returns>
+        public static IContent PreviousVersion(this IContent content)
+        {
+            return content?.ContentLink.PreviousVersion();
+        }
+
+
+        /// <summary>
+        /// Gets the previous version.
+        /// </summary>
         /// <typeparam name="T">The type of content.</typeparam>
         /// <param name="content">The content.</param>
         /// <returns>The previous version of the content.</returns>
@@ -239,18 +250,30 @@ namespace EPi.Libraries.QnaMaker.Core
         /// <summary>
         /// Gets the previous version.
         /// </summary>
-        /// <param name="content">The content.</param>
+        /// <typeparam name="T">The type of content.</typeparam>
+        /// <param name="contentReference">The content reference.</param>
         /// <returns>The previous version of the content.</returns>
-        public static IContent PreviousVersion(this IContent content)
+        public static T PreviousVersion<T>(this ContentReference contentReference)
+            where T : class
         {
-            if (content == null)
+            return contentReference.PreviousVersion() as T;
+        }
+
+        /// <summary>
+        /// Gets the previous version.
+        /// </summary>
+        /// <param name="contentReference">The content reference.</param>
+        /// <returns>The previous version of the content.</returns>
+        public static IContent PreviousVersion(this ContentReference contentReference)
+        {
+            if (ContentReference.IsNullOrEmpty(contentReference))
             {
                 return null;
             }
 
             try
             {
-                ContentVersion previousVersion = ContentVersionRepository.List(contentLink: content.ContentLink)
+                ContentVersion previousVersion = ContentVersionRepository.List(contentReference)
                     .OrderByDescending(x => x.Saved).FirstOrDefault(
                         version => version.IsMasterLanguageBranch
                                    && version.Status == VersionStatus.PreviouslyPublished);
@@ -259,7 +282,7 @@ namespace EPi.Libraries.QnaMaker.Core
                 {
                     return null;
                 }
-               
+
                 IContent previousContent;
                 return ContentRepository.TryGet(contentLink: previousVersion.ContentLink, settings: LanguageSelector.AutoDetect(true), content: out previousContent)
                            ? previousContent
