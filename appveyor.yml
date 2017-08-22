@@ -6,13 +6,18 @@ environment:
   myget_token: 'secure: 9Z+KYPk2hI7hg9kYLv/N13fvoqcYCP96isNUkRrKu0v87cw85H62oe/DCwpqvBXF'
 install:
 - choco install gitversion.portable -y
+- choco install "msbuild-sonarqube-runner" -y
 - cmd: nuget sources add -Name EPiServerFeed -Source http://nuget.episerver.com/feed/packages.svc/
 before_build:
 - cmd: nuget restore
 - ps: gitversion /l console /output buildserver /updateAssemblyInfo
-build:
-  project: EPi.Libraries.QnaMaker.sln
-  verbosity: normal
+#build:
+#  project: EPi.Libraries.QnaMaker.sln
+#  verbosity: normal
+build_script:
+  - MSBuild.SonarQube.Runner.exe begin /k:"jstemerdink:EPi.Libraries.QnaMaker" /n:"EPi.Libraries.QnaMaker" /d:"sonar.host.url=https://sonarcloud.io" /d:"sonar.organization=jstemerdink-github" /d:"sonar.login=0b0eec6902ab7d776899f79bfeff15d313dd6e09"
+  - msbuild "EPi.Libraries.QnaMaker.sln"
+  - MSBuild.SonarQube.Runner.exe end /d:"sonar.login=0b0eec6902ab7d776899f79bfeff15d313dd6e09"
 after_build:
 - cmd: nuget pack EPi.Libraries.QnaMaker\EPi.Libraries.QnaMaker.csproj -version "%GitVersion_NuGetVersion%" -prop "target=%CONFIGURATION%"
 - cmd: appveyor PushArtifact "EPi.Libraries.QnaMaker.%GitVersion_NuGetVersion%.nupkg"
