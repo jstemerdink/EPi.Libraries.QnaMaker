@@ -23,8 +23,7 @@ namespace EPi.Libraries.QnaMaker.ContentArea
     using System.Collections.Generic;
     using System.Collections.ObjectModel;
     using System.Linq;
-    using System.Net.Http;
-
+   
     using EPi.Libraries.QnaMaker.Attributes;
     using EPi.Libraries.QnaMaker.Core;
     using EPi.Libraries.QnaMaker.Models;
@@ -57,14 +56,14 @@ namespace EPi.Libraries.QnaMaker.ContentArea
 
             this.Logger.Log(Level.Debug, "[QnA Maker] Moving content.");
 
-            ContentData contentData = e.Content as ContentData;
-
-            if (contentData == null)
+            if (e.TargetLink.ID != 2)
             {
                 return;
             }
 
-            if (e.TargetLink.ID != 2)
+            ContentData contentData = e.Content as ContentData;
+
+            if (contentData == null)
             {
                 return;
             }
@@ -92,7 +91,6 @@ namespace EPi.Libraries.QnaMaker.ContentArea
         /// </summary>
         /// <param name="sender">The sender.</param>
         /// <param name="e">The <see cref="EPiServer.ContentEventArgs"/> instance containing the event data.</param>
-        /// <exception cref="HttpRequestException">Failed to add or delete qna item for knowledge base, or to delete the knowledgebase/</exception>
         protected override void OnPublishedContent(object sender, ContentEventArgs e)
         {
             if (e == null)
@@ -113,83 +111,7 @@ namespace EPi.Libraries.QnaMaker.ContentArea
             {
                 this.Logger.Log(Level.Debug, "[QnA Maker] Content is overview page.");
 
-                string knowledgebaseId = contentData.KnowledgebaseId();
-
-                if (string.IsNullOrWhiteSpace(value: knowledgebaseId))
-                {
-                    this.Logger.Log(Level.Debug, "[QnA Maker] Content has no knowledgebase id.");
-                    return;
-                }
-
-                ContentArea contentArea = contentData.GetPropertyValue<QnaContainerAttribute, ContentArea>();
-
-                if (contentArea == null)
-                {
-                    return;
-                }
-
-                List<ContentAreaItem> previousItems = new List<ContentAreaItem>();
-                List<ContentAreaItem> currentItems = contentArea.Items.ToList();
-
-                ContentData previousContent = e.Content.PreviousVersion<ContentData>();
-
-                if (previousContent != null)
-                {
-                    ContentArea previousContentArea =
-                        previousContent.GetPropertyValue<QnaContainerAttribute, ContentArea>();
-
-                    if (previousContentArea != null)
-                    {
-                        previousItems = previousContentArea.Items.ToList();
-                    }
-                }
-
-                this.Logger.Log(Level.Debug, "[QnA Maker] Adding items to add from the knowledgebase with id: {0}", knowledgebaseId);
-
-                List<ContentAreaItem> contentAreaItemsToAdd =
-                    currentItems.Where(
-                        contentAreaItem => !previousItems.Select(p => p.ContentGuid)
-                                               .Contains(value: contentAreaItem.ContentGuid)).ToList();
-
-                this.Logger.Log(Level.Debug, "[QnA Maker] Adding items to delete from the knowledgebase with id: {0}", knowledgebaseId);
-
-                List<ContentAreaItem> contentAreaItemsToDelete =
-                    previousItems.Where(
-                        contentAreaItem => !currentItems.Select(p => p.ContentGuid)
-                                               .Contains(value: contentAreaItem.ContentGuid)).ToList();
-
-                UpdateKnowledgebaseRequest updateKnowledgebaseRequest = new UpdateKnowledgebaseRequest();
-
-                ItemsToAdd itemsToAdd = new ItemsToAdd();
-                ReadOnlyCollection<QnaPair> qnaPairsToAdd = GetQnaPairs(items: contentAreaItemsToAdd);
-                itemsToAdd.QnaPairs = qnaPairsToAdd.ToArray();
-
-                if (this.IncludeUrl)
-                {
-                    itemsToAdd.Urls = new[] { e.Content.ContentUrl() };
-                }
-                
-                updateKnowledgebaseRequest.Add = itemsToAdd;
-
-                ItemsToDelete itemsToDelete = new ItemsToDelete();
-                ReadOnlyCollection<QnaPair> qnaPairsToDelete = GetQnaPairs(items: contentAreaItemsToDelete);
-                itemsToDelete.QnaPairs = qnaPairsToDelete.ToArray();
-                updateKnowledgebaseRequest.Delete = itemsToDelete;
-
-                this.Logger.Log(Level.Debug, "[QnA Maker] Updating the knowledgebase with id: {0}", knowledgebaseId);
-
-                this.ApiWrapper.UpdateQnaItem(
-                    updateKnowledgebaseRequest: updateKnowledgebaseRequest,
-                    knowledgebaseId: knowledgebaseId);
-
-                if (!contentData.ContentChanged())
-                {
-                    return;
-                }
-
-                this.Logger.Log(Level.Debug, "[QnA Maker] Publishing the knowledgebase with id: {0}, because it was marked as changed.", knowledgebaseId);
-
-                this.ApiWrapper.PublishKnowledgeBase(knowledgebaseId: knowledgebaseId);
+                this.UpdateKnowlegdebase(e.Content);
 
                 return;
             }
@@ -208,6 +130,105 @@ namespace EPi.Libraries.QnaMaker.ContentArea
         private static ReadOnlyCollection<QnaPair> GetQnaPairs(IEnumerable<ContentAreaItem> items)
         {
             return items.Select(i => i.ContentLink).GetQnaPairs();
+        }
+
+        /// <summary>
+        /// Updates the knowlegdebase.
+        /// </summary>
+        /// <param name="content">The content.</param>
+        private void UpdateKnowlegdebase(IContent content)
+        {
+            ContentData contentData = content as ContentData;
+
+            if (contentData == null)
+            {
+                return;
+            }
+
+            string knowledgebaseId = contentData.KnowledgebaseId();
+
+            if (string.IsNullOrWhiteSpace(value: knowledgebaseId))
+            {
+                this.Logger.Log(Level.Debug, "[QnA Maker] Content has no knowledgebase id.");
+                return;
+            }
+
+            ContentArea contentArea = contentData.GetPropertyValue<QnaContainerAttribute, ContentArea>();
+
+            if (contentArea == null)
+            {
+                return;
+            }
+
+            List<ContentAreaItem> previousItems = new List<ContentAreaItem>();
+            List<ContentAreaItem> currentItems = contentArea.Items.ToList();
+
+            ContentData previousContent = content.PreviousVersion<ContentData>();
+
+            if (previousContent != null)
+            {
+                ContentArea previousContentArea = previousContent.GetPropertyValue<QnaContainerAttribute, ContentArea>();
+
+                if (previousContentArea != null)
+                {
+                    previousItems = previousContentArea.Items.ToList();
+                }
+            }
+
+            this.Logger.Log(
+                Level.Debug,
+                "[QnA Maker] Adding items to add from the knowledgebase with id: {0}",
+                knowledgebaseId);
+
+            List<ContentAreaItem> contentAreaItemsToAdd = currentItems
+                .Where(
+                    contentAreaItem => !previousItems.Select(p => p.ContentGuid).Contains(value: contentAreaItem.ContentGuid))
+                .ToList();
+
+            this.Logger.Log(
+                Level.Debug,
+                "[QnA Maker] Adding items to delete from the knowledgebase with id: {0}",
+                knowledgebaseId);
+
+            List<ContentAreaItem> contentAreaItemsToDelete = previousItems
+                .Where(contentAreaItem => !currentItems.Select(p => p.ContentGuid).Contains(value: contentAreaItem.ContentGuid))
+                .ToList();
+
+            UpdateKnowledgebaseRequest updateKnowledgebaseRequest = new UpdateKnowledgebaseRequest();
+
+            ItemsToAdd itemsToAdd = new ItemsToAdd();
+            ReadOnlyCollection<QnaPair> qnaPairsToAdd = GetQnaPairs(items: contentAreaItemsToAdd);
+            itemsToAdd.QnaPairs = qnaPairsToAdd.ToArray();
+
+            if (this.IncludeUrl)
+            {
+                itemsToAdd.Urls = new[] { content.ContentUrl() };
+            }
+
+            updateKnowledgebaseRequest.Add = itemsToAdd;
+
+            ItemsToDelete itemsToDelete = new ItemsToDelete();
+            ReadOnlyCollection<QnaPair> qnaPairsToDelete = GetQnaPairs(items: contentAreaItemsToDelete);
+            itemsToDelete.QnaPairs = qnaPairsToDelete.ToArray();
+            updateKnowledgebaseRequest.Delete = itemsToDelete;
+
+            this.Logger.Log(Level.Debug, "[QnA Maker] Updating the knowledgebase with id: {0}", knowledgebaseId);
+
+            this.ApiWrapper.UpdateQnaItem(
+                updateKnowledgebaseRequest: updateKnowledgebaseRequest,
+                knowledgebaseId: knowledgebaseId);
+
+            if (!contentData.ContentChanged())
+            {
+                return;
+            }
+
+            this.Logger.Log(
+                Level.Debug,
+                "[QnA Maker] Publishing the knowledgebase with id: {0}, because it was marked as changed.",
+                knowledgebaseId);
+
+            this.ApiWrapper.PublishKnowledgeBase(knowledgebaseId: knowledgebaseId);
         }
 
         /// <summary>
