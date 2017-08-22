@@ -16,9 +16,9 @@ before_build:
 #  project: EPi.Libraries.QnaMaker.sln
 #  verbosity: normal
 build_script:
-  - MSBuild.SonarQube.Runner.exe begin /k:"jstemerdink:EPi.Libraries.QnaMaker" /n:"EPi.Libraries.QnaMaker" /d:"sonar.host.url=https://sonarcloud.io" /d:"sonar.organization=jstemerdink-github" /d:"sonar.login=%sonar_token%"
+  - MSBuild.SonarQube.Runner.exe begin /k:"jstemerdink:EPi.Libraries.QnaMaker" /n:"EPi.Libraries.QnaMaker" /d:"sonar.host.url=https://sonarcloud.io" /d:"sonar.organization=jstemerdink-github" /d:"sonar.login=$env:sonar_token"
   - msbuild "EPi.Libraries.QnaMaker.sln"
-  - MSBuild.SonarQube.Runner.exe end /d:"sonar.login=%sonar_token%"
+  - MSBuild.SonarQube.Runner.exe end /d:"sonar.login=$env:sonar_token"
 after_build:
 - cmd: nuget pack EPi.Libraries.QnaMaker\EPi.Libraries.QnaMaker.csproj -version "%GitVersion_NuGetVersion%" -prop "target=%CONFIGURATION%"
 - cmd: appveyor PushArtifact "EPi.Libraries.QnaMaker.%GitVersion_NuGetVersion%.nupkg"
