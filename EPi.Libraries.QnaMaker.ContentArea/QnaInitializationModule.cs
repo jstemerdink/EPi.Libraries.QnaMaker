@@ -44,54 +44,6 @@ namespace EPi.Libraries.QnaMaker.ContentArea
     public class QnaInitializationModule : QnaInitializationModuleBase
     {
         /// <summary>
-        /// Handles the <see cref="E:DeletedContent" /> event.
-        /// </summary>
-        /// <param name="sender">The sender.</param>
-        /// <param name="e">The <see cref="DeleteContentEventArgs"/> instance containing the event data.</param>
-        /// <exception cref="HttpRequestException">Failed to delete knowledge base</exception>
-        protected override void OnDeletedContent(object sender, DeleteContentEventArgs e)
-        {
-            if (e == null)
-            {
-                return;
-            }
-
-            ContentData contentData = e.Content as ContentData;
-
-            if (contentData == null)
-            {
-                return;
-            }
-
-            if (contentData.IsOverviewPage())
-            {
-                this.Logger.Log(Level.Debug, "[QnA Maker] Content is overview page.");
-
-                string knowledgebaseId = contentData.KnowledgebaseId();
-
-                if (!string.IsNullOrWhiteSpace(value: knowledgebaseId))
-                {
-                    this.Logger.Log(Level.Debug, "[QnA Maker] Deleted the knowledgebase with id: {0}", knowledgebaseId);
-                    this.ApiWrapper.DeleteKnowledgeBase(knowledgebaseId: knowledgebaseId);
-                }
-
-                this.Logger.Log(Level.Debug, "[QnA Maker] Content has no knowledgebase id.");
-
-                return;
-            }
-
-            if (contentData.IsQnaItem())
-            {
-                this.Logger.Log(Level.Debug, "[QnA Maker] Content is QnA item.");
-
-                this.Logger.Log(Level.Debug, "[QnA Maker] Updating knowledgebase: deleting item(s).");
-
-                // Delete the QnA item
-                this.DeleteQnaPair(contentData, e.ContentLink);
-            }
-        }
-
-        /// <summary>
         /// Handles the <see cref="E:MovingContent" /> event.
         /// </summary>
         /// <param name="sender">The sender.</param>
@@ -102,6 +54,8 @@ namespace EPi.Libraries.QnaMaker.ContentArea
             {
                 return;
             }
+
+            this.Logger.Log(Level.Debug, "[QnA Maker] Moving content.");
 
             ContentData contentData = e.Content as ContentData;
 
@@ -115,15 +69,22 @@ namespace EPi.Libraries.QnaMaker.ContentArea
                 return;
             }
 
-            if (!contentData.IsQnaItem())
+            if (contentData.IsOverviewPage())
             {
+                this.Logger.Log(Level.Debug, "[QnA Maker] Content is overview page.");
+
+                this.DeleteKnowledgeBase(contentData);
+
                 return;
             }
 
-            this.Logger.Log(Level.Debug, "[QnA Maker] Updating knowledgebase: deleting item(s), because moved to trash.");
+            if (contentData.IsQnaItem())
+            {
+                this.Logger.Log(Level.Debug, "[QnA Maker] Updating knowledgebase: deleting item(s), because moved to trash.");
 
-            // Delete the QnA item
-            this.DeleteQnaPair(contentData, e.ContentLink);
+                // Delete the QnA item
+                this.DeleteQnaPair(contentData, e.ContentLink);
+            }
         }
 
         /// <summary>
@@ -138,6 +99,8 @@ namespace EPi.Libraries.QnaMaker.ContentArea
             {
                 return;
             }
+
+            this.Logger.Log(Level.Debug, "[QnA Maker] Published content.");
 
             ContentData contentData = e.Content as ContentData;
 
@@ -200,7 +163,12 @@ namespace EPi.Libraries.QnaMaker.ContentArea
                 ItemsToAdd itemsToAdd = new ItemsToAdd();
                 ReadOnlyCollection<QnaPair> qnaPairsToAdd = GetQnaPairs(items: contentAreaItemsToAdd);
                 itemsToAdd.QnaPairs = qnaPairsToAdd.ToArray();
-                itemsToAdd.Urls = new[] { e.Content.ContentUrl() };
+
+                if (this.IncludeUrl)
+                {
+                    itemsToAdd.Urls = new[] { e.Content.ContentUrl() };
+                }
+                
                 updateKnowledgebaseRequest.Add = itemsToAdd;
 
                 ItemsToDelete itemsToDelete = new ItemsToDelete();

@@ -19,10 +19,12 @@
 // OTHER DEALINGS IN THE SOFTWARE.
 namespace EPi.Libraries.QnaMaker.Core
 {
+    using System.Configuration;
     using System.Globalization;
     using System.Linq;
     using System.Net.Http;
     using System.Reflection;
+    using System.Web;
 
     using EPi.Libraries.QnaMaker.Attributes;
     using EPi.Libraries.QnaMaker.Models;
@@ -35,6 +37,7 @@ namespace EPi.Libraries.QnaMaker.Core
     using EPiServer.Framework.Initialization;
     using EPiServer.Logging;
     using EPiServer.Security;
+    using EPiServer.ServiceLocation;
 
     /// <summary>
     /// Class QnaInitializationModuleBase.
@@ -42,6 +45,12 @@ namespace EPi.Libraries.QnaMaker.Core
     /// <seealso cref="EPiServer.Framework.IInitializableModule" />
     public abstract class QnaInitializationModuleBase : IInitializableModule
     {
+        /// <summary>
+        /// Gets a value indicating whether to [include URL].
+        /// </summary>
+        /// <value><c>true</c> if to [include URL]; otherwise, <c>false</c>.</value>
+        protected bool IncludeUrl { get; private set; }
+
         /// <summary>
         /// Gets the qna API wrapper
         /// </summary>
@@ -80,12 +89,18 @@ namespace EPi.Libraries.QnaMaker.Core
         /// <remarks>Gets called as part of the EPiServer Framework initialization sequence. Note that it will be called
         /// only once per AppDomain, unless the method throws an exception. If an exception is thrown, the initialization
         /// method will be called repeadetly for each request reaching the site until the method succeeds.</remarks>
+        /// <exception cref="ActivationException">if there is are errors resolving the service instance.</exception>
         public void Initialize(InitializationEngine context)
         {
             if (context == null)
             {
                 return;
             }
+
+            bool includeUrl;
+            bool.TryParse(ConfigurationManager.AppSettings["qna:includeurl"], out includeUrl);
+
+            this.IncludeUrl = includeUrl;
 
             this.Logger = context.Locate.Advanced.GetInstance<ILogger>();
 
@@ -99,7 +114,6 @@ namespace EPi.Libraries.QnaMaker.Core
 
             this.ContentEvents.PublishedContent += this.OnPublishedContent;
             this.ContentEvents.PublishingContent += this.OnPublishingContent;
-            this.ContentEvents.DeletedContent += this.OnDeletedContent;
             this.ContentEvents.MovingContent += this.OnMovingContent;
 
             this.Logger.Log(Level.Debug, "[QnA Maker] Finished initializing content events.");
@@ -121,16 +135,18 @@ namespace EPi.Libraries.QnaMaker.Core
         {
             this.ContentEvents.PublishedContent -= this.OnPublishedContent;
             this.ContentEvents.PublishingContent -= this.OnPublishingContent;
-            this.ContentEvents.DeletedContent -= this.OnDeletedContent;
             this.ContentEvents.MovingContent -= this.OnMovingContent;
         }
 
         /// <summary>
-        /// Handles the <see cref="E:DeletedContent" /> event.
+        /// Called when [checking if the url is local].
         /// </summary>
-        /// <param name="sender">The sender.</param>
-        /// <param name="e">The <see cref="DeleteContentEventArgs"/> instance containing the event data.</param>
-        protected abstract void OnDeletedContent(object sender, DeleteContentEventArgs e);
+        /// <returns><c>true</c> if on a local host, <c>false</c> otherwise.</returns>
+        protected static bool IsLocalhost()
+        {
+            string host = HttpContext.Current.Request.Url.Host.ToLower();
+            return host == "localhost";
+        }
 
         /// <summary>
         /// Handles the <see cref="E:MovingContent" /> event.
@@ -157,6 +173,8 @@ namespace EPi.Libraries.QnaMaker.Core
             {
                 return;
             }
+
+            this.Logger.Log(Level.Debug, "[QnA Maker] Publishing content.");
 
             ContentData contentData = e.Content as ContentData;
 
@@ -214,7 +232,11 @@ namespace EPi.Libraries.QnaMaker.Core
             CreateKnowledgebaseRequest createKnowledgeBaseRequest = new CreateKnowledgebaseRequest();
             createKnowledgeBaseRequest.Name = knowledgebaseName;
             createKnowledgeBaseRequest.QnaPairs = new QnaPair[0];
-            createKnowledgeBaseRequest.Urls = new[] { e.Content.ContentUrl() };
+
+            if (this.IncludeUrl)
+            {
+                createKnowledgeBaseRequest.Urls = new[] { e.Content.ContentUrl() };
+            }
 
             try
             {
@@ -225,8 +247,7 @@ namespace EPi.Libraries.QnaMaker.Core
                 this.Logger.Error(httpRequestException.Message, httpRequestException);
 
                 e.CancelAction = true;
-                e.CancelReason =
-                    "Unable to create a new knowledge base.";
+                e.CancelReason = httpRequestException.Message;
             }
 
             this.Logger.Log(Level.Debug, "[QnA Maker] Created the knowledgebase with id {0}", knowledgebaseId);
@@ -257,6 +278,60 @@ namespace EPi.Libraries.QnaMaker.Core
                 (IContent)editableContent,
                 SaveAction.Save | SaveAction.ForceCurrentVersion,
                 AccessLevel.NoAccess);
+        }
+
+        /// <summary>
+        /// Deletes the knowledge base.
+        /// </summary>
+        /// <param name="contentData">The content data.</param>
+        protected virtual void DeleteKnowledgeBase(ContentData contentData)
+        {
+            if (contentData == null)
+            {
+                return;
+            }
+
+            string knowledgebaseId = contentData.KnowledgebaseId();
+
+            PropertyInfo knowledgebaseIdProperty = contentData.GetType().GetProperties()
+                .FirstOrDefault(info => info.HasAttribute<QnaKnowledgebaseIdAttribute>());
+
+            // Delete the knowledgebase
+            if (!string.IsNullOrWhiteSpace(value: knowledgebaseId))
+            {
+                this.Logger.Log(Level.Debug, "[QnA Maker] Deleted the knowledgebase with id: {0}", knowledgebaseId);
+                this.ApiWrapper.DeleteKnowledgeBase(knowledgebaseId: knowledgebaseId);
+            }
+
+            ContentData editableContent = contentData.CreateWritableClone() as ContentData;
+
+            if (editableContent == null)
+            {
+                this.Logger.Log(Level.Debug, "[QnA Maker] Could not create writable clone for content.");
+                return;
+            }
+
+            try
+            {
+                if (knowledgebaseIdProperty != null)
+                {
+                    // Clear the knowledgebase id, as het been deleted from the cloud
+                    editableContent[knowledgebaseIdProperty.Name] = string.Empty;
+
+                    // Save the writable contentData, do not create a new version
+                    this.ContentRepository.Save((IContent)editableContent, SaveAction.Save, AccessLevel.NoAccess);
+
+                    this.Logger.Log(Level.Debug, "[QnA Maker] Cleared the knowledgebase id from the content.");
+                }
+                else
+                {
+                    this.Logger.Log(Level.Debug, "[QnA Maker] COuld not clear the knowledgebase id from the content.");
+                }
+            }
+            catch (EPiServerException epiServerException)
+            {
+                this.Logger.Error(epiServerException.Message, epiServerException);
+            }
         }
     }
 }
