@@ -182,12 +182,14 @@ namespace EPi.Libraries.QnaMaker.ContentArea
                     updateKnowledgebaseRequest: updateKnowledgebaseRequest,
                     knowledgebaseId: knowledgebaseId);
 
-                if (contentData.ContentChanged())
+                if (!contentData.ContentChanged())
                 {
-                    this.Logger.Log(Level.Debug, "[QnA Maker] Publishing the knowledgebase with id: {0}, because it was marked as changed.", knowledgebaseId);
-
-                    this.ApiWrapper.PublishKnowledgeBase(knowledgebaseId: knowledgebaseId);
+                    return;
                 }
+
+                this.Logger.Log(Level.Debug, "[QnA Maker] Publishing the knowledgebase with id: {0}, because it was marked as changed.", knowledgebaseId);
+
+                this.ApiWrapper.PublishKnowledgeBase(knowledgebaseId: knowledgebaseId);
 
                 return;
             }
