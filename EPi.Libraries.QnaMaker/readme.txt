@@ -1,10 +1,11 @@
 ﻿
 The settings were added to your appSettings:
 
-<add key="qna:baseuri" value="https://westus.api.cognitive.microsoft.com/qnamaker/v2.0/knowledgebases" />
 <add key="qna:subscriptionkey" value="" />
+<add key="qna:includeurl" value="false" />
 
-You will need to set the appropriate values, else a configuration error will be thrown.
+You will need to set the appropriate value for the 'subscriptionkey' , else a configuration error will be thrown.
+Set 'includeurl' to true if you want to include the url(s) of the QnA page to your knowledgge base. If the url e.g. is localhost, an error will be thrown though.
 
 Usage example:
 

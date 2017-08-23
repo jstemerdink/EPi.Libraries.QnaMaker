@@ -44,7 +44,7 @@ namespace EPi.Libraries.QnaMaker.Core
         /// <remarks>
         /// Default uri: https://westus.api.cognitive.microsoft.com/qnamaker/v2.0/knowledgebases
         /// </remarks>
-        private readonly string baseUri = ConfigurationManager.AppSettings["qna:baseuri"];
+        private const string BaseUri = "https://westus.api.cognitive.microsoft.com/qnamaker/v2.0/knowledgebases";
 
         /// <summary>
         /// The HTTP client
@@ -77,14 +77,9 @@ namespace EPi.Libraries.QnaMaker.Core
                     "The appSetting 'qna:subscriptionkey' is empty or not available.");
             }
 
-            if (string.IsNullOrWhiteSpace(this.baseUri))
-            {
-                this.baseUri = "https://westus.api.cognitive.microsoft.com/qnamaker/v2.0/knowledgebases";
-            }
-
             this.httpClient = new HttpClient
                                   {
-                                      BaseAddress = new Uri(this.baseUri),
+                                      BaseAddress = new Uri(BaseUri),
                                       Timeout = TimeSpan.FromMinutes(5),
                                       DefaultRequestHeaders =
                                           {
@@ -108,7 +103,7 @@ namespace EPi.Libraries.QnaMaker.Core
             string uri = string.Format(
                 CultureInfo.InvariantCulture,
                 "{0}/{1}",
-                this.baseUri,
+                BaseUri,
                 "create");
 
             using (ObjectContent<CreateKnowledgebaseRequest> content =
@@ -187,7 +182,7 @@ namespace EPi.Libraries.QnaMaker.Core
             string uri = string.Format(
                 CultureInfo.InvariantCulture,
                 "{0}/{1}/generateAnswer",
-                this.baseUri,
+                BaseUri,
                 knowledgebaseId);
 
             using (ObjectContent<AnswerRequest> content =
@@ -206,7 +201,7 @@ namespace EPi.Libraries.QnaMaker.Core
                         return JsonConvert.DeserializeObject<GeneratedAnswer>(responseContent);
                     }
 
-                    ErrorInfo errorInfo = responseContent != null
+                    ErrorInfo errorInfo = !string.IsNullOrWhiteSpace(responseContent)
                                               ? JsonConvert.DeserializeObject<ErrorInfo>(responseContent)
                                               : new ErrorInfo
                                                     {
@@ -259,27 +254,21 @@ namespace EPi.Libraries.QnaMaker.Core
             string uri = string.Format(
                 CultureInfo.InvariantCulture,
                 "{0}/{1}",
-                this.baseUri,
+                BaseUri,
                 knowledgebaseId);
 
             try
             {
                 HttpResponseMessage response = this.httpClient.DeleteAsync(uri).Result;
+                string responseContent = response.Content?.ReadAsStringAsync().Result;
 
                 if (response.IsSuccessStatusCode)
                 {
                     return true;
                 }
 
-                string detailedReason = null;
-
-                if (response.Content != null)
-                {
-                    detailedReason = response.Content.ReadAsStringAsync().Result;
-                }
-
-                ErrorInfo errorInfo = detailedReason != null
-                                          ? JsonConvert.DeserializeObject<ErrorInfo>(detailedReason)
+                ErrorInfo errorInfo = !string.IsNullOrWhiteSpace(responseContent)
+                                          ? JsonConvert.DeserializeObject<ErrorInfo>(responseContent)
                                           : new ErrorInfo
                                                 {
                                                     ApiError = new ApiError
@@ -330,7 +319,7 @@ namespace EPi.Libraries.QnaMaker.Core
             string uri = string.Format(
                 CultureInfo.InvariantCulture,
                 "{0}/{1}",
-                this.baseUri,
+                BaseUri,
                 knowledgebaseId);
 
             using (ObjectContent<string> content =
@@ -347,7 +336,7 @@ namespace EPi.Libraries.QnaMaker.Core
                         return true;
                     }
 
-                    ErrorInfo errorInfo = responseContent != null
+                    ErrorInfo errorInfo = !string.IsNullOrWhiteSpace(responseContent)
                                               ? JsonConvert.DeserializeObject<ErrorInfo>(responseContent)
                                               : new ErrorInfo
                                                     {
@@ -401,7 +390,7 @@ namespace EPi.Libraries.QnaMaker.Core
             string uri = string.Format(
                 CultureInfo.InvariantCulture,
                 "{0}/{1}",
-                this.baseUri,
+                BaseUri,
                 knowledgebaseId);
 
             using (ObjectContent<UpdateKnowledgebaseRequest> content =
@@ -416,20 +405,15 @@ namespace EPi.Libraries.QnaMaker.Core
 
                     HttpResponseMessage response = this.httpClient.SendAsync(request).Result;
 
+                    string responseContent = response.Content?.ReadAsStringAsync().Result;
+
                     if (response.IsSuccessStatusCode)
                     {
                         return;
                     }
 
-                    string detailedReason = null;
-
-                    if (response.Content != null)
-                    {
-                        detailedReason = response.Content.ReadAsStringAsync().Result;
-                    }
-
-                    ErrorInfo errorInfo = detailedReason != null
-                                              ? JsonConvert.DeserializeObject<ErrorInfo>(detailedReason)
+                    ErrorInfo errorInfo = !string.IsNullOrWhiteSpace(responseContent)
+                                              ? JsonConvert.DeserializeObject<ErrorInfo>(responseContent)
                                               : new ErrorInfo
                                                     {
                                                         ApiError = new ApiError
@@ -482,7 +466,7 @@ namespace EPi.Libraries.QnaMaker.Core
             string uri = string.Format(
                 CultureInfo.InvariantCulture,
                 "{0}/{1}/train",
-                this.baseUri,
+                BaseUri,
                 knowledgebaseId);
 
             using (ObjectContent<Feedback> content =
@@ -492,7 +476,6 @@ namespace EPi.Libraries.QnaMaker.Core
             {
                 try
                 {
-                    string detailedReason = null;
                     ErrorInfo errorInfo;
                     
                     using (HttpRequestMessage request =
@@ -500,18 +483,15 @@ namespace EPi.Libraries.QnaMaker.Core
                     {
                         HttpResponseMessage response = this.httpClient.SendAsync(request).Result;
 
+                        string responseContent = response.Content?.ReadAsStringAsync().Result;
+
                         if (response.IsSuccessStatusCode)
                         {
                             return;
                         }
-
-                        if (response.Content != null)
-                        {
-                            detailedReason = response.Content.ReadAsStringAsync().Result;
-                        }
-
-                        errorInfo = detailedReason != null
-                                                  ? JsonConvert.DeserializeObject<ErrorInfo>(detailedReason)
+                        
+                        errorInfo = !string.IsNullOrWhiteSpace(responseContent)
+                                                  ? JsonConvert.DeserializeObject<ErrorInfo>(responseContent)
                                                   : new ErrorInfo
                                                         {
                                                             ApiError = new ApiError

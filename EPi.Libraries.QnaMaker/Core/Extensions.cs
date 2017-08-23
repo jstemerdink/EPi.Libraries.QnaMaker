@@ -319,7 +319,7 @@ namespace EPi.Libraries.QnaMaker.Core
 
             try
             {
-                propertyInfo = contentData.GetType().GetProperties().Where(predicate: HasAttribute<T>).FirstOrDefault();
+                propertyInfo = contentData.GetType().GetProperties().FirstOrDefault(predicate: HasAttribute<T>);
             }
             catch (ArgumentNullException argumentNullException)
             {
@@ -490,29 +490,6 @@ namespace EPi.Libraries.QnaMaker.Core
             }
 
             return contentList.GetQnaPairs();
-        }
-
-        /// <summary>
-        ///     Determines whether [the specified property] has [the specified attribute].
-        /// </summary>
-        /// <typeparam name="T">The type of the attribute to check for.</typeparam>
-        /// <param name="propertyInfo">The propertyInfo.</param>
-        /// <returns><c>true</c> if [the specified property] has [the specified attribute]; otherwise, <c>false</c>.</returns>
-        public static bool HasAttribute<T>(this PropertyInfo propertyInfo)
-            where T : Attribute
-        {
-            T attr = default(T);
-
-            try
-            {
-                attr = (T)Attribute.GetCustomAttribute(element: propertyInfo, attributeType: typeof(T));
-            }
-            catch (Exception exception)
-            {
-                LogException(exception: exception);
-            }
-
-            return attr != null;
         }
 
         /// <summary>
