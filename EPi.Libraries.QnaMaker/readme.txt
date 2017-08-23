@@ -1,7 +1,6 @@
 ﻿
 The settings were added to your appSettings:
 
-<add key="qna:baseuri" value="https://westus.api.cognitive.microsoft.com/qnamaker/v2.0/knowledgebases" />
 <add key="qna:subscriptionkey" value="" />
 <add key="qna:includeurl" value="false" />
 

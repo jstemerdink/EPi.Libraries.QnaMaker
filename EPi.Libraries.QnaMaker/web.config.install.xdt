@@ -1,7 +1,6 @@
 ﻿<configuration xmlns:xdt="http://schemas.microsoft.com/XML-Document-Transform">
   <appSettings xdt:Transform="InsertIfMissing"></appSettings>
   <appSettings>
-    <add key="qna:baseuri" value="https://westus.api.cognitive.microsoft.com/qnamaker/v2.0/knowledgebases" xdt:Transform="InsertIfMissing" xdt:Locator="Match(key)" />
     <add key="qna:subscriptionkey" value="" xdt:Transform="InsertIfMissing" xdt:Locator="Match(key)" />
     <add key="qna:includeurl" value="false" xdt:Transform="InsertIfMissing" xdt:Locator="Match(key)" />
   </appSettings>
