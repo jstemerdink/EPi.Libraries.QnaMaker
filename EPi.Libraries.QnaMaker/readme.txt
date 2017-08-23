@@ -1,23 +1,14 @@
-# EPi.Libraries.QnaMaker
+﻿
+The settings were added to your appSettings:
 
-[![Build status](https://ci.appveyor.com/api/projects/status/p9wb03tyde11si8s/branch/master?svg=true)](https://ci.appveyor.com/project/jstemerdink/epi-libraries-qnamaker/branch/master)
-[![Quality Gate](https://sonarqube.com/api/badges/gate?key=jstemerdink:EPi.Libraries.QnaMaker)](https://sonarqube.com/dashboard/index/jstemerdink:EPi.Libraries.QnaMaker)
-[![GitHub version](https://badge.fury.io/gh/jstemerdink%2FEPi.Libraries.Logging.OneTrueError.svg)](http://badge.fury.io/gh/jstemerdink%2FEPi.Libraries.QnaMaker)
-[![Platform](https://img.shields.io/badge/platform-.NET%204.5.2-blue.svg?style=flat)](https://msdn.microsoft.com/en-us/library/w0x726c2%28v=vs.110%29.aspx)
-[![Platform](https://img.shields.io/badge/EPiServer-%2010.0.1-orange.svg?style=flat)](http://world.episerver.com/cms/)
-[![GitHub license](https://img.shields.io/badge/license-MIT%20license-blue.svg?style=flat)](LICENSE)
-[![Stories in Backlog](https://badge.waffle.io/jstemerdink/EPi.Libraries.QnaMaker.svg?label=enhancement&title=Backlog)](http://waffle.io/jstemerdink/EPi.Libraries.QnaMaker)
+<add key="qna:subscriptionkey" value="" />
+<add key="qna:includeurl" value="false" />
 
-## About
-Connect your site to the QnA maker api
-See [QnA maker site](https://azure.microsoft.com/en-us/services/cognitive-services/qna-maker/) for information about the QnA maker API.
+You will need to set the appropriate value for the 'subscriptionkey' , else a configuration error will be thrown.
+Set 'includeurl' to true if you want to include the url(s) of the QnA page to your knowledgge base. If the url e.g. is localhost, an error will be thrown though.
 
-## Parts
-[Core](EPi.Libraries.QnaMaker/README.md)  
-[ContentArea implementation](EPi.Libraries.QnaMaker.ContentArea/README.md)  
+Usage example:
 
-## How to use
-```
     [QnaOverviewPage]
     public class QnaOverviewPage : PageData
     {
@@ -65,9 +56,4 @@ See [QnA maker site](https://azure.microsoft.com/en-us/services/cognitive-servic
         [QnaQuestion]
         public virtual string Question { get; set; }
     }
-```
 
-
-> *Powered by ReSharper*
-
-> [![image](http://resources.jetbrains.com/assets/media/open-graph/jetbrains_250x250.png)](http://jetbrains.com)

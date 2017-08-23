@@ -1,0 +1,21 @@
+<?xml version="1.0"?>
+
+<package>
+  <metadata>
+    <id>$id$</id>
+    <version>$version$</version>
+    <title>$title$</title>
+    <authors>Jeroen Stemerdink</authors>
+    <owners>Jeroen Stemerdink</owners>
+    <projectUrl>https://github.com/jstemerdink/EPi.Libraries.QnaMaker/</projectUrl>
+    <iconUrl>http://jstemerdink.net/images/js-nuget.png</iconUrl>
+    <requireLicenseAcceptance>false</requireLicenseAcceptance>
+    <description>Connect your site to the QnA maker api.</description>
+    <releaseNotes>1.0.0</releaseNotes>
+    <copyright>Copyright © Jeroen Stemerdink 2017</copyright>
+    <tags>qna faq</tags>
+    <dependencies>
+      <dependency id="EPi.Libraries.QnaMaker" version="1.0.0" />
+    </dependencies>
+  </metadata>
+</package>

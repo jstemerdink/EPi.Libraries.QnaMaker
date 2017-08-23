@@ -1,0 +1,34 @@
+﻿
+Microsoft Visual Studio Solution File, Format Version 12.00
+# Visual Studio 15
+VisualStudioVersion = 15.0.26430.16
+MinimumVisualStudioVersion = 10.0.40219.1
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "EPi.Libraries.QnaMaker", "EPi.Libraries.QnaMaker\EPi.Libraries.QnaMaker.csproj", "{A2483B08-F8CA-439C-BB1B-47E23044F6F2}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "EPi.Libraries.QnaMaker.ContentArea", "EPi.Libraries.QnaMaker.ContentArea\EPi.Libraries.QnaMaker.ContentArea.csproj", "{8C8AA961-E436-45D8-B8DC-A48D96095F26}"
+EndProject
+Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Solution Files", "Solution Files", "{3CF662C7-B487-4F40-8428-54B6608067CD}"
+	ProjectSection(SolutionItems) = preProject
+		appveyor.yml = appveyor.yml
+		README.md = README.md
+	EndProjectSection
+EndProject
+Global
+	GlobalSection(SolutionConfigurationPlatforms) = preSolution
+		Debug|Any CPU = Debug|Any CPU
+		Release|Any CPU = Release|Any CPU
+	EndGlobalSection
+	GlobalSection(ProjectConfigurationPlatforms) = postSolution
+		{A2483B08-F8CA-439C-BB1B-47E23044F6F2}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{A2483B08-F8CA-439C-BB1B-47E23044F6F2}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{A2483B08-F8CA-439C-BB1B-47E23044F6F2}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{A2483B08-F8CA-439C-BB1B-47E23044F6F2}.Release|Any CPU.Build.0 = Release|Any CPU
+		{8C8AA961-E436-45D8-B8DC-A48D96095F26}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{8C8AA961-E436-45D8-B8DC-A48D96095F26}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{8C8AA961-E436-45D8-B8DC-A48D96095F26}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{8C8AA961-E436-45D8-B8DC-A48D96095F26}.Release|Any CPU.Build.0 = Release|Any CPU
+	EndGlobalSection
+	GlobalSection(SolutionProperties) = preSolution
+		HideSolutionNode = FALSE
+	EndGlobalSection
+EndGlobal
