@@ -1,6 +1,6 @@
 # EPi.Libraries.QnaMaker
 
-[![Build status](https://ci.appveyor.com/api/projects/status/p9wb03tyde11si8s/branch/master?svg=true)](https://ci.appveyor.com/project/jstemerdink/epi-libraries-qnamaker/branch/master)
+[![Build status](https://ci.appveyor.com/api/projects/status/wnxijbpue0a3lb31/branch/master?svg=true)](https://ci.appveyor.com/project/jstemerdink/epi-libraries-qnamaker/branch/master)
 [![GitHub version](https://badge.fury.io/gh/jstemerdink%2FEPi.Libraries.QnaMaker.svg)](https://badge.fury.io/gh/jstemerdink%2FEPi.Libraries.QnaMaker)
 [![Platform](https://img.shields.io/badge/platform-.NET%204.5.2-blue.svg?style=flat)](https://msdn.microsoft.com/en-us/library/w0x726c2%28v=vs.110%29.aspx)
 [![Platform](https://img.shields.io/badge/EPiServer-%2010.0.1-orange.svg?style=flat)](http://world.episerver.com/cms/)
