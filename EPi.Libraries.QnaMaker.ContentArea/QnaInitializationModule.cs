@@ -34,12 +34,14 @@ namespace EPi.Libraries.QnaMaker.ContentArea
     using EPiServer.Framework;
     using EPiServer.Logging;
 
+    using InitializationModule = EPiServer.Web.InitializationModule;
+
     /// <summary>
     /// Class QnaInitializationModule.
     /// </summary>
     /// <seealso cref="EPiServer.Framework.IInitializableModule" />
     [InitializableModule]
-    [ModuleDependency(typeof(EPiServer.Web.InitializationModule))]
+    [ModuleDependency(typeof(InitializationModule))]
     public class QnaInitializationModule : QnaInitializationModuleBase
     {
         /// <summary>

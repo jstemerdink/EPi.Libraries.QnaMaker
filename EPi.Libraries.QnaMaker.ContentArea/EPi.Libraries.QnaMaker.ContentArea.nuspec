@@ -11,11 +11,11 @@
     <iconUrl>http://jstemerdink.net/images/js-nuget.png</iconUrl>
     <requireLicenseAcceptance>false</requireLicenseAcceptance>
     <description>Connect your site to the QnA maker api.</description>
-    <releaseNotes>1.0.0</releaseNotes>
+    <releaseNotes>Updated for Episerver 11</releaseNotes>
     <copyright>Copyright © Jeroen Stemerdink 2017</copyright>
     <tags>qna faq</tags>
     <dependencies>
-      <dependency id="EPi.Libraries.QnaMaker" version="1.0.0" />
+      <dependency id="EPi.Libraries.QnaMaker" version="2.0.0" />
     </dependencies>
   </metadata>
 </package>

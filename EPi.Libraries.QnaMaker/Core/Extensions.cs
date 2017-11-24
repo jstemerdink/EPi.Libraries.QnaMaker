@@ -56,7 +56,7 @@ namespace EPi.Libraries.QnaMaker.Core
         /// <summary>
         /// The URL resolver
         /// </summary>
-        private static UrlResolver urlResolver;
+        private static IUrlResolver urlResolver;
 
         /// <summary>
         /// The logger
@@ -112,7 +112,7 @@ namespace EPi.Libraries.QnaMaker.Core
         /// </summary>
         /// <value>The URL resolver instance.</value>
         /// <exception cref="ActivationException">if there is are errors resolving the service instance.</exception>
-        public static UrlResolver UrlResolver
+        public static IUrlResolver UrlResolver
         {
             get
             {
@@ -121,7 +121,7 @@ namespace EPi.Libraries.QnaMaker.Core
                     return urlResolver;
                 }
 
-                urlResolver = ServiceLocator.Current.GetInstance<UrlResolver>();
+                urlResolver = ServiceLocator.Current.GetInstance<IUrlResolver>();
 
                 return urlResolver;
             }
@@ -191,7 +191,7 @@ namespace EPi.Libraries.QnaMaker.Core
                 return UrlResolver.GetUrl(
                     contentLink: content.ContentLink,
                     language: null,
-                    virtualPathArguments: new VirtualPathArguments { ContextMode = ContextMode.Default });
+                    urlResolverArguments: new UrlResolverArguments { ContextMode = ContextMode.Default });
             }
             catch (ActivationException activationException)
             {

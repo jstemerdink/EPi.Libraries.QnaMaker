@@ -1,9 +1,10 @@
 # EPi.Libraries.QnaMaker
 
 [![Build status](https://ci.appveyor.com/api/projects/status/wnxijbpue0a3lb31/branch/master?svg=true)](https://ci.appveyor.com/project/jstemerdink/epi-libraries-qnamaker/branch/master)
+[![Quality Gate](https://sonarcloud.io/api/badges/gate?key=jstemerdink:EPi.Libraries.QnaMaker)](https://sonarcloud.io/dashboard/index/jstemerdink:EPi.Libraries.QnaMaker)
 [![GitHub version](https://badge.fury.io/gh/jstemerdink%2FEPi.Libraries.QnaMaker.svg)](https://badge.fury.io/gh/jstemerdink%2FEPi.Libraries.QnaMaker)
-[![Platform](https://img.shields.io/badge/platform-.NET%204.5.2-blue.svg?style=flat)](https://msdn.microsoft.com/en-us/library/w0x726c2%28v=vs.110%29.aspx)
-[![Platform](https://img.shields.io/badge/EPiServer-%2010.0.1-orange.svg?style=flat)](http://world.episerver.com/cms/)
+[![Platform](https://img.shields.io/badge/platform-.NET%204.6.1-blue.svg?style=flat)](https://msdn.microsoft.com/en-us/library/w0x726c2%28v=vs.110%29.aspx)
+[![Platform](https://img.shields.io/badge/EPiServer-%2011.0.1-orange.svg?style=flat)](http://world.episerver.com/cms/)
 [![GitHub license](https://img.shields.io/badge/license-MIT%20license-blue.svg?style=flat)](LICENSE)
 
 ## About
@@ -63,4 +64,4 @@ See [QnA maker site](https://azure.microsoft.com/en-us/services/cognitive-servic
 
 > *Powered by ReSharper*
 
-> [![image](http://resources.jetbrains.com/assets/media/open-graph/jetbrains_250x250.png)](http://jetbrains.com)
+> [![image](https://i0.wp.com/jstemerdink.files.wordpress.com/2017/08/logo_resharper.png)](http://jetbrains.com)
